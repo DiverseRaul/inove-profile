@@ -1,12 +1,12 @@
 <template>
   <div class="min-h-screen bg-background">
-    <NavigationBar />
+    <NavBar />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import NavigationBar from '@/components/NavigationBar.vue'
+import NavBar from '@/components/NavBar.vue'
 
 const isVisible = ref(false)
 
