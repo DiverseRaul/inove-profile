@@ -155,7 +155,7 @@
           type="submit" 
           class="signup-button"
           :class="{ 'button-loading': isLoading }"
-          :disabled="isLoading || !agreeTerms || (password && confirmPassword && password !== confirmPassword)"
+          :disabled="!!(isLoading || !agreeTerms || (password && confirmPassword && password !== confirmPassword))"
         >
           <span v-if="!isLoading">Create Account</span>
           <span v-else class="loader"></span>
