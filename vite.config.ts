@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/', // For custom domain on GitHub Pages
   plugins: [vue()],
   resolve: {
     alias: {
