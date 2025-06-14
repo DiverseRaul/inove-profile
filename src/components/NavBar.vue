@@ -7,7 +7,6 @@
           <span class="logo-text">inove.<span>profile</span></span>
         </RouterLink>
 
-        <!-- Desktop Navigation -->
         <div class="navbar-nav desktop-nav">
           <RouterLink 
             v-for="item in navItems" 
