@@ -18,6 +18,14 @@
           >
             {{ item.name }}
           </RouterLink>
+          <!-- Auth links for Desktop -->
+          <template v-if="!userSession">
+            <RouterLink to="/login" class="nav-link" :class="{ 'nav-link-active': $route.path === '/login' }">Login</RouterLink>
+            <RouterLink to="/register" class="nav-link nav-link-cta" :class="{ 'nav-link-active': $route.path === '/register' }">Signup</RouterLink>
+          </template>
+          <template v-else>
+            <button @click="handleLogout" class="nav-link as-button">Logout</button>
+          </template>
         </div>
 
         <!-- Mobile Menu Button -->
@@ -44,17 +52,30 @@
         >
           {{ item.name }}
         </RouterLink>
+
+        <!-- Auth links for Mobile -->
+        <template v-if="!userSession">
+          <RouterLink to="/login" class="mobile-nav-link" @click="closeMobileMenu">Login</RouterLink>
+          <RouterLink to="/register" class="mobile-nav-link mobile-nav-link-cta" @click="closeMobileMenu">Signup</RouterLink>
+        </template>
+        <template v-else>
+          <button @click="handleLogout" class="mobile-nav-link as-button">Logout</button>
+        </template>
       </div>
     </div>
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+import { supabase } from '../lib/supabaseClient'
+import type { Session, Subscription } from '@supabase/supabase-js'
 
 const isScrolled = ref(false)
 const isMobileMenuOpen = ref(false)
+const userSession = ref<Session | null>(null)
+const router = useRouter()
 
 const navItems = [
   { name: 'Home', path: '/' }
@@ -72,12 +93,45 @@ const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
 
-onMounted(() => {
+const handleLogout = async () => {
+  try {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('Error logging out:', error.message)
+      return;
+    }
+    // userSession.value will be updated by onAuthStateChange, or we can set it to null here
+    // router.push('/') // Redirect to home, or login page
+    if (isMobileMenuOpen.value) {
+      closeMobileMenu()
+    }
+  } catch (error: any) {
+    console.error('Error logging out:', error.message)
+  }
+}
+
+let authListener: Subscription | null = null;
+
+onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
+  
+  const { data } = await supabase.auth.getSession()
+  userSession.value = data.session
+
+  const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    userSession.value = session
+    if (_event === 'SIGNED_OUT') {
+      router.push('/'); // Redirect to home on sign out
+    }
+  });
+  authListener = listener.subscription;
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  if (authListener) {
+    authListener.unsubscribe()
+  }
 })
 </script>
 
@@ -256,6 +310,43 @@ onUnmounted(() => {
   }
 
   /* Mobile nav is now controlled by mobile-nav-open class only */
+}
+.nav-link.as-button,
+.mobile-nav-link.as-button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: var(--font-size-body-large);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: inherit;
+  text-align: left; /* For mobile nav link consistency */
+  width: 100%; /* For mobile nav link consistency */
+}
+
+.nav-link.as-button:hover,
+.mobile-nav-link.as-button:hover {
+  color: var(--color-primary);
+  background-color: rgba(103, 80, 164, 0.1);
+}
+
+/* Call to action style for Signup */
+.nav-link-cta {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary) !important; /* Ensure text color override */
+  border-radius: var(--radius-full);
+  padding-left: var(--spacing-lg) !important;
+  padding-right: var(--spacing-lg) !important;
+}
+.nav-link-cta:hover {
+  background-color: var(--color-primary-dark);
+  color: var(--color-on-primary) !important;
+}
+
+.mobile-nav-link-cta {
+  font-weight: 600; /* Make it stand out a bit */
+  color: var(--color-primary);
 }
 </style>
 
