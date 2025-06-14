@@ -62,16 +62,9 @@
           </div>
         </div>
         
-        <div class="form-group">
-          <div class="remember-me">
-            <label class="checkbox-container">
-              <input type="checkbox" v-model="rememberMe" />
-              <span class="checkmark"></span>
-              <span class="checkbox-label">Remember me</span>
-            </label>
-          </div>
+        <div v-if="loginError" class="message-container error-message">
+          <p>{{ loginError }}</p>
         </div>
-        
         <button 
           type="submit" 
           class="login-button"
@@ -108,11 +101,14 @@
           <button 
             type="button" 
             class="forgot-password-link-new" 
-            @click="forgotPassword"
+            @click="handleForgotPassword"
           >
             Forgot Password?
           </button>
         </p>
+        <div v-if="forgotPasswordMessage && !loginError" class="message-container info-message">
+          <p>{{ forgotPasswordMessage }}</p>
+        </div>
       </div>
     </div>
   </div>
@@ -120,38 +116,72 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
+import { supabase } from '@/lib/supabaseClient';
 
 // Form state
 const email = ref('');
 const password = ref('');
-const rememberMe = ref(false);
+// const rememberMe = ref(false); // Supabase JS client handles session persistence by default
 const showPassword = ref(false);
 const isLoading = ref(false);
+const loginError = ref<string | null>(null);
+const forgotPasswordMessage = ref<string | null>(null);
+
+const router = useRouter();
 
 // Focus state for input animations
 const isFocusedEmail = ref(false);
 const isFocusedPassword = ref(false);
 
 // Form handlers
-const handleLogin = () => {
+const handleLogin = async () => {
   isLoading.value = true;
-  
-  // Simulate API call
-  setTimeout(() => {
-    console.log('Login attempt', {
+  loginError.value = null;
+  forgotPasswordMessage.value = null; // Clear other messages
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.value,
       password: password.value,
-      rememberMe: rememberMe.value
     });
+
+    if (error) {
+      loginError.value = error.message;
+    } else if (data.user) {
+      router.push('/'); // Redirect to home page on successful login
+    } else {
+      loginError.value = 'An unexpected error occurred. Please try again.';
+    }
+  } catch (err: any) {
+    loginError.value = err.message || 'An unexpected error occurred during login.';
+  } finally {
     isLoading.value = false;
-    // In a real app, you would handle authentication here
-  }, 1500);
+  }
 };
 
-const forgotPassword = () => {
-  // Handle forgot password flow
-  console.log('Forgot password clicked');
+const handleForgotPassword = async () => {
+  if (!email.value) {
+    forgotPasswordMessage.value = 'Please enter your email address above to reset your password.';
+    loginError.value = null; // Clear login error
+    return;
+  }
+  isLoading.value = true;
+  loginError.value = null;
+  forgotPasswordMessage.value = null;
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.value, {
+      redirectTo: `${window.location.origin}/auth/update-password`, 
+    });
+    if (error) {
+      forgotPasswordMessage.value = `Error: ${error.message}`;
+    } else {
+      forgotPasswordMessage.value = 'Password reset email sent. Please check your inbox (and spam folder).';
+    }
+  } catch (err: any) {
+    forgotPasswordMessage.value = `Error: ${err.message || 'Failed to send password reset email.'}`;
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>
 
@@ -606,6 +636,28 @@ const forgotPassword = () => {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+.message-container {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.error-message {
+  background-color: var(--color-error-container, #f8d7da);
+  color: var(--color-on-error-container, #721c24);
+  border-color: var(--color-error, #f5c6cb);
+}
+
+.info-message {
+  background-color: var(--color-tertiary-container, #e2d9f3);
+  color: var(--color-on-tertiary-container, #2c1d41);
+  border-color: var(--color-tertiary, #785a9b);
 }
 
 /* Dark mode specific styles for gradient */

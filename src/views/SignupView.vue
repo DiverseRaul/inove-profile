@@ -250,8 +250,11 @@ const handleSignup = async () => {
       password: password.value,
       options: {
         data: {
-          first_name: firstName.value,
+          full_name: `${firstName.value} ${lastName.value}`.trim(), // Construct full_name
+          // Retain first_name and last_name if you still want them separately in raw_user_meta_data
+          first_name: firstName.value, 
           last_name: lastName.value,
+          // avatar_url will be null by default as it's not collected here
         },
         emailRedirectTo: `${window.location.origin}/auth/confirmed` // Ensure this path matches your Vue router and Supabase redirect settings
       }

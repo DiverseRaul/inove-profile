@@ -17,13 +17,14 @@
           >
             {{ item.name }}
           </RouterLink>
+          <RouterLink v-if="userSession" to="/profile" class="nav-link" :class="{ 'nav-link-active': $route.path === '/profile' }">My Profile</RouterLink>
           <!-- Auth links for Desktop -->
           <template v-if="!userSession">
             <RouterLink to="/login" class="nav-link" :class="{ 'nav-link-active': $route.path === '/login' }">Login</RouterLink>
             <RouterLink to="/register" class="nav-link nav-link-cta" :class="{ 'nav-link-active': $route.path === '/register' }">Signup</RouterLink>
           </template>
           <template v-else>
-            <button @click="handleLogout" class="nav-link as-button">Logout</button>
+            <button @click="handleLogout" class="logout-button-desktop">Logout</button>
           </template>
         </div>
 
@@ -58,7 +59,8 @@
           <RouterLink to="/register" class="mobile-nav-link mobile-nav-link-cta" @click="closeMobileMenu">Signup</RouterLink>
         </template>
         <template v-else>
-          <button @click="handleLogout" class="mobile-nav-link as-button">Logout</button>
+          <RouterLink to="/profile" class="mobile-nav-link" @click="closeMobileMenu">My Profile</RouterLink>
+          <button @click="handleLogout" class="logout-button-mobile">Logout</button>
         </template>
       </div>
     </div>
@@ -141,14 +143,14 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   z-index: 1000;
-  background-color: rgba(18, 18, 18, 0.8);
-  backdrop-filter: blur(20px);
+  background-color: rgba(18, 18, 18, 0.85); /* Slightly more transparent for enhanced blur */
+  backdrop-filter: blur(30px);
   border-bottom: 1px solid var(--color-outline-variant);
   transition: all var(--transition-normal);
 }
 
 .navbar-scrolled {
-  background-color: rgba(18, 18, 18, 0.95);
+  background-color: rgba(18, 18, 18, 0.6); /* Also adjust scrolled state for consistency */
   box-shadow: var(--shadow-2);
 }
 
@@ -297,6 +299,48 @@ onUnmounted(() => {
 
 .mobile-nav-link:hover {
   color: var(--color-primary);
+}
+
+/* Logout Button Styles */
+.logout-button-desktop {
+  padding: var(--spacing-sm) var(--spacing-lg); /* Slightly more padding for emphasis */
+  background-color: var(--color-error-container, #b3261e); /* Fallback red */
+  color: var(--color-on-error-container, #ffffff);
+  border: none;
+  border-radius: var(--radius-lg); /* More pronounced radius */
+  font-weight: 600;
+  font-size: var(--font-size-body-large);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  text-align: center;
+  margin-left: var(--spacing-sm); /* Add a little space from other nav items */
+}
+
+.logout-button-desktop:hover, .logout-button-desktop:focus {
+  background-color: var(--color-error, #8c1d18); /* Darker red on hover/focus */
+  color: var(--color-on-error, #ffffff);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-1);
+}
+
+.logout-button-mobile {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-md) 0;
+  background-color: transparent; /* Keep it clean in mobile dropdown */
+  color: var(--color-error, #b3261e); /* Prominent error color for text */
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: var(--font-size-body-large);
+  text-align: left; /* Align with other mobile nav links */
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.logout-button-mobile:hover, .logout-button-mobile:focus {
+  background-color: var(--color-error-container-hover, rgba(179, 38, 30, 0.1)); /* Subtle hover background */
+  color: var(--color-error-dark, #8c1d18);
 }
 
 @media (max-width: 768px) {
