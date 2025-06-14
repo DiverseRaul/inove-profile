@@ -18,28 +18,26 @@
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router';
 import { supabase } from '../lib/supabaseClient';
-import { onMounted } from 'vue';
+import { onUnmounted } from 'vue';
 
 const router = useRouter();
 
-onMounted(() => {
-  // Supabase handles session creation automatically when the user lands here from the confirmation link.
-  // We can listen for auth state changes if we need to react to the new session immediately,
-  // but for just displaying this page, it's often not necessary to do more here.
-  // The user is effectively logged in by Supabase at this point if the token was valid.
-  const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN') {
-      console.log('User signed in after email confirmation:', session);
-      // You could automatically redirect to a dashboard here if desired, e.g.:
-      // router.push('/dashboard');
-      // For now, we'll let them click the button to go to login.
-    }
-  });
+// Supabase handles session creation automatically when the user lands here from the confirmation link.
+// We can listen for auth state changes if we need to react to the new session immediately,
+// but for just  displaying this page, it's often not necessary to do more here.
+// The user is effectively logged in by Supabase at this point if the token was valid.
+const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN') {
+    console.log('User signed in after email confirmation:', session);
+    // You could automatically redirect to a dashboard here if desired, e.g.:
+    // router.push('/dashboard');
+    // For now, we'll let them click the button to go to login.
+  }
+});
 
-  // It's good practice to unsubscribe when the component is unmounted
-  return () => {
-    authListener?.unsubscribe();
-  };
+// It's good practice to unsubscribe when the component is unmounted
+onUnmounted(() => {
+  subscription.unsubscribe();
 });
 
 </script>
