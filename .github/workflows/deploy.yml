@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20 # Using Node.js 20 as specified
+          node-version: 20
           cache: 'npm'
 
       - name: Install Dependencies
@@ -31,8 +31,8 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist # The folder the build output is in
-          branch: gh-pages # The branch to deploy to
-          clean: true # Automatically remove files from the branch before deploying
-          single-commit: true # Deploy as a single commit
-          cname: inove.studio # Your custom domain
+          folder: dist
+          branch: gh-pages
+          clean: true
+          single-commit: true # Overwrite the gh-pages branch with a single commit
+          cname: profile.inove.studio # Use your custom domain
