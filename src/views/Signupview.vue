@@ -65,7 +65,7 @@
         </div>
         
         <div class="form-group">
-          <label for="password" class="form-label">Password</label>
+          <label for="password" class="form-label">Password:</label>
           <div class="input-container" :class="{ 'input-focused': isFocusedPassword }">
             <input 
               :type="showPassword ? 'text' : 'password'" 
