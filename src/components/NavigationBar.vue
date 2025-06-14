@@ -2,7 +2,6 @@
   <nav class="navbar" :class="{ 'navbar-scrolled': isScrolled }">
     <div class="container">
       <div class="navbar-content">
-        <!-- Logo -->
         <RouterLink to="/" class="navbar-logo">
           <span class="logo-text">inove.<span>profile</span></span>
         </RouterLink>
